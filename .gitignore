@@ -1,0 +1,5 @@
+.pwtmp/
+.seeio-assets/
+node_modules/
+out/
+.next/

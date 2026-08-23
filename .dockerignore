@@ -1,0 +1,10 @@
+AGENTS.md
+.seeio/
+.seeio-assets/
+.pwtmp/
+.git/
+.gitignore
+seeio.json
+node_modules/
+out/
+.next/
