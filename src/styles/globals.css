@@ -1,0 +1,8 @@
+/*
+ * Global styles
+ *
+ * The main site.css lives in public/assets/css/ because it uses
+ * relative paths to reference fonts and images in public/assets/.
+ * Importing it here bundles it into the Next.js build pipeline.
+ */
+@import url('/assets/css/site.css');
