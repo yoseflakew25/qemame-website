@@ -1,6 +1,79 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+
 export default function Legend() {
+  const reduce = usePrefersReducedMotion();
+  const secRef = useRef<HTMLElement>(null);
+  const [curBeat, setCurBeat] = useState(0);
+
+  useEffect(() => {
+    const sec = secRef.current;
+    if (!sec) return;
+
+    const beats = sec.querySelectorAll<HTMLElement>('.beat');
+    const dots = sec.querySelectorAll<HTMLElement>('.ldot');
+
+    if (reduce) {
+      sec.style.setProperty('--p', '0.75');
+      beats.forEach((b) => b.classList.add('is-on'));
+      return;
+    }
+
+    let ticking = false;
+    let cachedTotal = 0;
+    let cur = -1;
+
+    const recalcTotal = () => {
+      cachedTotal = sec.offsetHeight - window.innerHeight;
+    };
+
+    const apply = (p: number) => {
+      sec.style.setProperty('--p', p.toFixed(4));
+      sec.classList.toggle('dance', p > 0.22 && p < 0.62);
+      const i = Math.min(Math.max(Math.floor(p * 4.02), 0), 3);
+      if (i !== cur) {
+        cur = i;
+        setCurBeat(i);
+        beats.forEach((b, n) => b.classList.toggle('is-on', n === i));
+        dots.forEach((d, n) => d.classList.toggle('is-on', n === i));
+      }
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const r = sec.getBoundingClientRect();
+        const p = Math.min(Math.max(-r.top / (cachedTotal || 1), 0), 1);
+        apply(p);
+      });
+    };
+
+    recalcTotal();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', () => { recalcTotal(); onScroll(); });
+    onScroll();
+
+    // Dot click navigation
+    dots.forEach((d) => {
+      d.addEventListener('click', () => {
+        const n = parseInt(d.getAttribute('data-goto') || '0', 10);
+        const target = sec.offsetTop + cachedTotal * ((n + 0.42) / 4);
+        window.scrollTo({ top: target, behavior: 'smooth' });
+      });
+    });
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', recalcTotal);
+    };
+  }, [reduce]);
+
   return (
-    <section className="legend" id="origin" style={{ '--p': '0' } as React.CSSProperties}>
+    <section className="legend" id="origin" ref={secRef} style={{ '--p': '0' } as React.CSSProperties}>
       <div className="legend__stage">
         <div className="legend__sky" aria-hidden="true">
           <div className="sky sky--night" />
@@ -21,9 +94,9 @@ export default function Legend() {
 
         <svg className="legend__scene" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
           <g className="sc-far">
-            <path d="M0 380 C90 330 130 360 200 336 C280 308 330 358 420 336 C510 314 560 360 650 338 C740 316 800 358 880 338 C930 326 970 342 1000 334 L1000 560 L0 560Z" fill="#2C3126" />
+            <path d="M0 380 C90 330 130 360 200 336 C280 308 330 358 420 336 C510 314 560 360 650 338 C740 316 800 358 880 338 C930 326 970 342 1000 334 L1000 560 L0 560Z" fill="#4A3520" />
           </g>
-          <path className="sc-hill" d="M0 430 C160 384 300 440 460 414 C620 388 760 440 900 416 C950 408 980 418 1000 412 L1000 560 L0 560Z" fill="#3A4231" />
+          <path className="sc-hill" d="M0 430 C160 384 300 440 460 414 C620 388 760 440 900 416 C950 408 980 418 1000 412 L1000 560 L0 560Z" fill="#5C4033" />
 
           <g className="sc-tree" transform="translate(700 432)">
             <path className="trunk" d="M0 0 C-4 -40 -8 -70 -2 -104 C2 -128 6 -140 0 -160" fill="none" stroke="#2A4A34" strokeWidth="11" strokeLinecap="round" />
@@ -42,13 +115,54 @@ export default function Legend() {
           </g>
 
           <g className="sc-kaldi" transform="translate(250 470)">
-            <path d="M0 0 L0 -46" stroke="#1A3028" strokeWidth="9" strokeLinecap="round" />
-            <path className="kaldi-arm" d="M0 -38 L26 -58" stroke="#1A3028" strokeWidth="7" strokeLinecap="round" />
-            <path d="M0 -38 L-20 -56" stroke="#1A3028" strokeWidth="7" strokeLinecap="round" />
-            <path d="M0 0 L-12 22 M0 0 L14 22" stroke="#1A3028" strokeWidth="8" strokeLinecap="round" />
-            <circle cx="0" cy="-58" r="13" fill="#1A3028" />
-            <path d="M-16 -46 L16 -46 L8 -8 L-8 -8Z" fill="#D9A441" opacity="0.92" />
-            <path className="kaldi-staff" d="M28 -62 L34 26" stroke="#3A6A4A" strokeWidth="4" strokeLinecap="round" />
+            {/* shadow */}
+            <ellipse cx="2" cy="26" rx="14" ry="3" fill="rgba(0,0,0,.25)" />
+
+            {/* legs */}
+            <path d="M-4 0 L-8 24" stroke="#8B6914" strokeWidth="7" strokeLinecap="round" />
+            <path d="M4 0 L10 24" stroke="#8B6914" strokeWidth="7" strokeLinecap="round" />
+            {/* feet */}
+            <path d="M-14 22 L-8 24 L-2 22" stroke="#6B4E12" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <path d="M4 22 L10 24 L16 22" stroke="#6B4E12" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+
+            {/* body / tunic */}
+            <path d="M-14 -44 C-18 -30 -16 -10 -10 0 L10 0 C16 -10 18 -30 14 -44 Z" fill="#D4A44A" />
+            <path d="M-14 -44 C-18 -30 -16 -10 -10 0 L10 0 C16 -10 18 -30 14 -44 Z" fill="none" stroke="#B8860B" strokeWidth="1" opacity="0.4" />
+            {/* tunic belt */}
+            <path d="M-12 -18 L12 -18" stroke="#8B6914" strokeWidth="2.5" strokeLinecap="round" />
+            {/* tunic hem detail */}
+            <path d="M-10 0 C-6 3 6 3 10 0" stroke="#B8860B" strokeWidth="1.2" fill="none" opacity="0.5" />
+
+            {/* left arm */}
+            <path className="kaldi-arm" d="M-12 -36 C-18 -30 -20 -22 -18 -14" stroke="#D4A44A" strokeWidth="7" strokeLinecap="round" fill="none" />
+            {/* right arm (waving) */}
+            <path d="M12 -36 C18 -32 24 -26 28 -22" stroke="#D4A44A" strokeWidth="7" strokeLinecap="round" fill="none" />
+            {/* hands */}
+            <circle cx="-18" cy="-14" r="4" fill="#D4A44A" />
+            <circle cx="28" cy="-22" r="4" fill="#D4A44A" />
+            {/* coffee cherries in hand */}
+            <circle cx="30" cy="-25" r="3" fill="#C0392B" />
+            <circle cx="34" cy="-23" r="2.8" fill="#E74C3C" />
+            <circle cx="31" cy="-20" r="2.5" fill="#A93226" />
+
+            {/* neck */}
+            <path d="M-3 -44 L-3 -50 M3 -44 L3 -50" stroke="#D4A44A" strokeWidth="5" strokeLinecap="round" />
+
+            {/* head */}
+            <circle cx="0" cy="-58" r="12" fill="#D4A44A" />
+            {/* hair */}
+            <path d="M-10 -64 C-8 -72 8 -72 10 -64" stroke="#6B4E12" strokeWidth="3" fill="none" strokeLinecap="round" />
+            <path d="M-11 -62 C-12 -68 -6 -74 0 -74 C6 -74 12 -68 11 -62" fill="#6B4E12" />
+            {/* face hint */}
+            <circle cx="-4" cy="-59" r="1.2" fill="#6B4E12" />
+            <circle cx="4" cy="-59" r="1.2" fill="#6B4E12" />
+            <path d="M-3 -55 Q0 -53 3 -55" stroke="#6B4E12" strokeWidth="1" fill="none" strokeLinecap="round" />
+
+
+
+            {/* small bag slung over shoulder */}
+            <path d="M-8 -36 C-16 -30 -18 -18 -14 -12" stroke="#5C4033" strokeWidth="2" fill="none" opacity="0.7" />
+            <ellipse cx="-16" cy="-14" rx="6" ry="8" fill="#5C4033" opacity="0.6" />
           </g>
 
           <g className="sc-goats">
@@ -71,7 +185,7 @@ export default function Legend() {
             </g>
           </g>
 
-          <path className="sc-grass" d="M0 520 C120 500 200 528 320 512 C440 496 520 528 640 514 C760 500 840 528 960 512 C980 509 992 512 1000 510 L1000 560 L0 560Z" fill="#262B21" />
+          <path className="sc-grass" d="M0 520 C120 500 200 528 320 512 C440 496 520 528 640 514 C760 500 840 528 960 512 C980 509 992 512 1000 510 L1000 560 L0 560Z" fill="#3C2A0A" />
 
           <defs>
             <g id="goat">
@@ -88,28 +202,27 @@ export default function Legend() {
         <div className="legend__copy">
           <p className="legend__kicker">The legend of Kaldi &middot; Kaffa forest, around the ninth century</p>
           <div className="legend__beats">
-            <blockquote className="beat is-on" data-beat="0">
+            <blockquote className={`beat${curBeat === 0 ? ' is-on' : ''}`} data-beat="0">
               <span className="beat__n">01</span>
               <p>In the wild forest of <b>Kaffa</b>, where coffee still grows unplanted under the canopy, a young goat herder called <b>Kaldi</b> walked his flock home at dusk.</p>
             </blockquote>
-            <blockquote className="beat" data-beat="1">
+            <blockquote className={`beat${curBeat === 1 ? ' is-on' : ''}`} data-beat="1">
               <span className="beat__n">02</span>
               <p>One evening the goats refused to sleep. They had eaten the crimson cherries of a low, glossy tree, and they <b>danced until the stars turned</b>.</p>
             </blockquote>
-            <blockquote className="beat" data-beat="2">
+            <blockquote className={`beat${curBeat === 2 ? ' is-on' : ''}`} data-beat="2">
               <span className="beat__n">03</span>
               <p>Kaldi carried the cherries to a monastery. A monk cast them into the fire, then rescued the fragrant beans, ground them, and steeped them in water. <b>The prayers ran all night.</b></p>
             </blockquote>
-            <blockquote className="beat" data-beat="3">
+            <blockquote className={`beat${curBeat === 3 ? ' is-on' : ''}`} data-beat="3">
               <span className="beat__n">04</span>
               <p>From that fire the drink crossed to Yemen, Cairo, Venice, Vienna, and every city with a window and a chair. <b>It began here. It still begins here.</b></p>
             </blockquote>
           </div>
           <div className="legend__dots" role="tablist" aria-label="Story chapters">
-            <button className="ldot is-on" data-goto="0" aria-label="Chapter 1" />
-            <button className="ldot" data-goto="1" aria-label="Chapter 2" />
-            <button className="ldot" data-goto="2" aria-label="Chapter 3" />
-            <button className="ldot" data-goto="3" aria-label="Chapter 4" />
+            {[0, 1, 2, 3].map((i) => (
+              <button key={i} className={`ldot${curBeat === i ? ' is-on' : ''}`} data-goto={i} aria-label={`Chapter ${i + 1}`} />
+            ))}
           </div>
         </div>
       </div>

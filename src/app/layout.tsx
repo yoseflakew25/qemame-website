@@ -28,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preload" href="/assets/img/cherries-in-hands.jpg" as="image" fetchPriority="high" />
         <link rel="preload" href="/assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/assets/fonts/notoserifethiopic-ethiopic.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </head>
       <body>
         <ClientInit />

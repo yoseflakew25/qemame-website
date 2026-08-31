@@ -1,3 +1,7 @@
+'use client';
+
+import { useState } from 'react';
+
 const VALUES = [
   { n: '01', title: 'Integrity', desc: 'We would rather lose an order than misdescribe a coffee. What is on the offer sheet is what goes in the bag.' },
   { n: '02', title: 'Empowerment', desc: 'Coffee should pay the people who grow it. We work with farmers so the value of a good harvest reaches the farm.' },
@@ -10,6 +14,8 @@ const VALUES = [
 ];
 
 export default function Values() {
+  const [active, setActive] = useState(0);
+
   return (
     <section className="values" id="values" aria-label="Our core values">
       <div className="wrap">
@@ -19,7 +25,15 @@ export default function Values() {
         </header>
         <div className="vgrid" id="vgrid" data-reveal>
           {VALUES.map((v, i) => (
-            <button key={v.n} className={`value${i === 0 ? ' is-on' : ''}`} data-value={i}>
+            <button
+              key={v.n}
+              className={`value${active === i ? ' is-on' : ''}`}
+              data-value={i}
+              onClick={() => setActive(i)}
+              onMouseEnter={() => {
+                if (window.matchMedia('(pointer:fine)').matches) setActive(i);
+              }}
+            >
               <span className="value__n">{v.n}</span>
               <b>{v.title}</b>
               <i>{v.desc}</i>

@@ -1,4 +1,57 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+
 export default function Footer() {
+  const reduce = usePrefersReducedMotion();
+  const [year, setYear] = useState(2026);
+  const [showTop, setShowTop] = useState(false);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
+  // Back to top visibility + footer giant reveal
+  useEffect(() => {
+    const footer = document.querySelector<HTMLElement>('.foot');
+    if (!footer) return;
+
+    let atFooter = false;
+    let ticking = false;
+
+    const checkTop = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const y = window.scrollY;
+        setShowTop(y > 900 && !atFooter);
+      });
+    };
+
+    window.addEventListener('scroll', checkTop, { passive: true });
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          atFooter = entries[0].isIntersecting;
+          const giant = document.querySelector<HTMLElement>('.foot__giant');
+          if (giant && atFooter) giant.classList.add('in');
+          checkTop();
+        },
+        { rootMargin: '0px' },
+      );
+      io.observe(footer);
+      return () => {
+        window.removeEventListener('scroll', checkTop);
+        io.disconnect();
+      };
+    }
+
+    return () => window.removeEventListener('scroll', checkTop);
+  }, []);
+
   return (
     <footer className="foot beanfield">
       <div className="tibeb tibeb--foot" aria-hidden="true" />
@@ -25,12 +78,25 @@ export default function Footer() {
       </div>
 
       <div className="wrap foot__bottom">
-        <p>&copy; <span id="year">2026</span> QEMAME TRADING PLC. All rights reserved.</p>
+        <p>&copy; <span id="year">{year}</span> QEMAME TRADING PLC. All rights reserved.</p>
+        <button
+          className="foot__top"
+          onClick={() => window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })}
+        >
+          &#8593; Back to top
+        </button>
         <p className="foot__made">Founded 2025 &middot; Addis Ababa, Ethiopia</p>
       </div>
 
       <div className="foot__giant" aria-hidden="true"><span>QEMAME</span></div>
-      <button className="totop" id="totop" aria-label="Back to top">&#8593;</button>
+      <button
+        className={`totop${showTop ? ' on' : ''}`}
+        id="totop"
+        aria-label="Back to top"
+        onClick={() => window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })}
+      >
+        &#8593;
+      </button>
     </footer>
   );
 }

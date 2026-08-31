@@ -1,6 +1,52 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+
 export default function Hero() {
+  const reduce = usePrefersReducedMotion();
+  const heroRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (reduce) return;
+    const hero = heroRef.current;
+    if (!hero) return;
+
+    const layers = hero.querySelectorAll<HTMLElement>('[data-depth]');
+    if (!layers.length) return;
+
+    let tx = 0, ty = 0, cx = 0, cy = 0, rafId = 0;
+
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+    const pl = () => {
+      rafId = 0;
+      cx = lerp(cx, tx, 0.06);
+      cy = lerp(cy, ty, 0.06);
+      if (Math.abs(cx - tx) < 0.001 && Math.abs(cy - ty) < 0.001) return;
+      layers.forEach((l) => {
+        const d = parseFloat(l.getAttribute('data-depth') || '0.1');
+        l.style.transform = 'translate3d(' + (-cx * d * 46) + 'px,' + (-cy * d * 22) + 'px,0)';
+      });
+      rafId = requestAnimationFrame(pl);
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      const r = hero.getBoundingClientRect();
+      tx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+      ty = ((e.clientY - r.top) / r.height - 0.5) * 2;
+      if (!rafId) rafId = requestAnimationFrame(pl);
+    };
+
+    hero.addEventListener('mousemove', onMouseMove);
+    return () => {
+      hero.removeEventListener('mousemove', onMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [reduce]);
+
   return (
-    <section className="hero" id="hero">
+    <section className="hero" id="hero" ref={heroRef}>
       <div className="hero__sky" aria-hidden="true">
         <div className="hero__sun" />
 

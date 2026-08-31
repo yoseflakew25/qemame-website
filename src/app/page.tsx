@@ -1,4 +1,3 @@
-import Loader from '@/components/common/Loader';
 import ProgressBar from '@/components/common/ProgressBar';
 import Navigation from '@/components/common/Navigation';
 import Footer from '@/components/common/Footer';
@@ -19,7 +18,6 @@ import Ticker from '@/components/ui/Ticker';
 export default function Home() {
   return (
     <>
-      <Loader />
       <a className="skip" data-target="#origin">Skip to the story</a>
       <ProgressBar />
       <Navigation />

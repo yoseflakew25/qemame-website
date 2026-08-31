@@ -1,4 +1,19 @@
+'use client';
+
+import { useState } from 'react';
+
+const TABS = [
+  { key: 'products', label: 'Products' },
+  { key: 'services', label: 'Services' },
+  { key: 'market', label: 'Who we work with' },
+  { key: 'start', label: 'How to start' },
+] as const;
+
+type TabKey = typeof TABS[number]['key'];
+
 export default function Quality() {
+  const [active, setActive] = useState<TabKey>('products');
+
   return (
     <section className="quality" id="offer">
       <div className="wrap">
@@ -9,13 +24,21 @@ export default function Quality() {
 
         <div className="specs" data-reveal>
           <div className="specs__tabs" role="tablist" aria-label="What we offer">
-            <button className="stab is-on" data-tab="products" role="tab" aria-selected="true">Products</button>
-            <button className="stab" data-tab="services" role="tab" aria-selected="false">Services</button>
-            <button className="stab" data-tab="market" role="tab" aria-selected="false">Who we work with</button>
-            <button className="stab" data-tab="start" role="tab" aria-selected="false">How to start</button>
+            {TABS.map((t) => (
+              <button
+                key={t.key}
+                className={`stab${active === t.key ? ' is-on' : ''}`}
+                data-tab={t.key}
+                role="tab"
+                aria-selected={active === t.key}
+                onClick={() => setActive(t.key)}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
           <div className="specs__body">
-            <div className="spane is-on" data-pane="products">
+            <div className={`spane${active === 'products' ? ' is-on' : ''}`} data-pane="products">
               <dl>
                 <div><dt>Washed arabica</dt><dd>Wet processed Ethiopian arabica: the clean, bright, tea like profile the country is known for.</dd></div>
                 <div><dt>Natural arabica</dt><dd>Unwashed, dried whole on the cherry, for buyers who want the fruit forward Ethiopian cup.</dd></div>
@@ -24,7 +47,7 @@ export default function Quality() {
                 <div><dt>Special preparation</dt><dd>Screen size, sorting and preparation to your specification. Tell us the cup and the paperwork you need and we will prepare it that way.</dd></div>
               </dl>
             </div>
-            <div className="spane" data-pane="services">
+            <div className={`spane${active === 'services' ? ' is-on' : ''}`} data-pane="services">
               <dl>
                 <div><dt>Export and logistics</dt><dd>We handle the export side so a first time buyer of Ethiopian coffee does not have to learn it alone.</dd></div>
                 <div><dt>Quality control and traceability</dt><dd>Coffee checked before it ships, and a record of where it came from that travels with it.</dd></div>
@@ -32,7 +55,7 @@ export default function Quality() {
                 <div><dt>Market access for farmers</dt><dd>Connecting Ethiopian producers to buyers they would not otherwise reach. This is half the reason the company exists.</dd></div>
               </dl>
             </div>
-            <div className="spane" data-pane="market">
+            <div className={`spane${active === 'market' ? ' is-on' : ''}`} data-pane="market">
               <dl>
                 <div><dt>Roasters and importers</dt><dd>International coffee roasters and importers looking for Ethiopian coffee with a name and a place attached to it.</dd></div>
                 <div><dt>Specialty cafes</dt><dd>Cafes that want a single origin they can talk about honestly across the counter.</dd></div>
@@ -40,7 +63,7 @@ export default function Quality() {
                 <div><dt>What they get</dt><dd>Green beans, private labelling and export logistics support, for buyers who value authenticity, consistency and direct relationships with producers.</dd></div>
               </dl>
             </div>
-            <div className="spane" data-pane="start">
+            <div className={`spane${active === 'start' ? ' is-on' : ''}`} data-pane="start">
               <dl>
                 <div><dt>1. Tell us the cup</dt><dd>Origin, process, grade and roughly what volume you are planning. If you are not sure, describe the cup you want and we will suggest options.</dd></div>
                 <div><dt>2. Samples</dt><dd>We send samples of what we can source against your brief, so you cup before you commit.</dd></div>
