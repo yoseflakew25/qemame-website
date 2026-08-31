@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import ClientInit from '@/components/ui/ClientInit';
+import PageLoader from '@/components/ui/PageLoader';
 import '@/styles/globals.css';
 
 export const viewport: Viewport = {
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preload" href="/assets/fonts/notoserifethiopic-ethiopic.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </head>
       <body>
+        <PageLoader />
         <ClientInit />
         {children}
       </body>
